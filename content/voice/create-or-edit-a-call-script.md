@@ -13,6 +13,7 @@ tips:
   - New and edit use the same editor and the same sections; an edit changes the reusable script, so assume it affects future calls and campaigns that select it.
   - 'Keep instructions concrete: say what the agent should do, what it must not do, and when it must hand off. That is more reliable than a short topic-only prompt.'
   - If you need to preserve the original behavior, export the script before a major rewrite or create a separate script for the new use case.
+stackedScreenshots: true
 screenshots:
   - src: /assets/screenshots/call-script-editor-templates.png
     alt: New call script template picker with industry categories such as Collections, Healthcare, Restaurant, and a Start from scratch option

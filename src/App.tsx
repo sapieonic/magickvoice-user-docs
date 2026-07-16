@@ -25,7 +25,6 @@ const productBaseUrl = (import.meta.env.VITE_MAGICKVOICE_APP_URL as string | und
 
 const pageContents = [
   ['visual-reference', 'Visual reference'],
-  ['common-jobs', 'Common tasks'],
   ['how-to-use-this-page', 'How to use'],
   ['tips-and-troubleshooting', 'Troubleshooting'],
 ] as const;
@@ -336,10 +335,38 @@ function Sidebar({
 function AssetFrame({ doc }: { doc: DocPage }) {
   const [missingImages, setMissingImages] = useState<string[]>([]);
   const [videoMissing, setVideoMissing] = useState(false);
+  const [zoomed, setZoomed] = useState<{ src: string; alt: string } | null>(null);
+  const lightboxCloseRef = useRef<HTMLButtonElement>(null);
   const screenshots = doc.asset.screenshots ?? [{
     src: doc.asset.screenshot,
     alt: `${doc.title} screenshot`,
   }];
+
+  useEffect(() => {
+    if (!zoomed) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    document.body.style.overflow = 'hidden';
+    window.requestAnimationFrame(() => lightboxCloseRef.current?.focus());
+
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setZoomed(null);
+      } else if (event.key === 'Tab') {
+        // Only the close button is focusable inside the dialog — keep focus on it.
+        event.preventDefault();
+        lightboxCloseRef.current?.focus();
+      }
+    }
+    window.addEventListener('keydown', onKey);
+
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
+  }, [zoomed]);
 
   return (
     <section className="assetPanel" id="visual-reference" aria-label="Screenshots and animations">
@@ -350,16 +377,23 @@ function AssetFrame({ doc }: { doc: DocPage }) {
         </div>
       </div>
 
-      <div className={`assetGrid ${screenshots.length > 1 ? 'multiple' : ''} ${doc.asset.compact ? 'compact' : ''}`}>
+      <div className={`assetGrid ${screenshots.length > 1 ? 'multiple' : ''} ${doc.asset.compact ? 'compact' : ''} ${doc.asset.stacked ? 'stacked' : ''}`}>
         {screenshots.map((screenshot) => (
           <figure className="mediaFigure" key={screenshot.src}>
             <div className="mediaFrame">
               {!missingImages.includes(screenshot.src) ? (
-                <img
-                  src={screenshot.src}
-                  alt={screenshot.alt}
-                  onError={() => setMissingImages((current) => [...current, screenshot.src])}
-                />
+                <button
+                  type="button"
+                  className="mediaZoomTrigger"
+                  onClick={() => setZoomed({ src: screenshot.src, alt: screenshot.alt })}
+                  aria-label={`Zoom in on ${screenshot.alt}`}
+                >
+                  <img
+                    src={screenshot.src}
+                    alt={screenshot.alt}
+                    onError={() => setMissingImages((current) => [...current, screenshot.src])}
+                  />
+                </button>
               ) : (
                 <div className="mediaFallback">
                   <Camera size={34} />
@@ -392,6 +426,32 @@ function AssetFrame({ doc }: { doc: DocPage }) {
           </div>
         )}
       </div>
+
+      {zoomed && (
+        <div
+          className="lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={zoomed.alt}
+          onClick={() => setZoomed(null)}
+        >
+          <button
+            ref={lightboxCloseRef}
+            type="button"
+            className="lightboxClose"
+            onClick={() => setZoomed(null)}
+            aria-label="Close zoomed image"
+          >
+            <X size={22} />
+          </button>
+          <img
+            className="lightboxImage"
+            src={zoomed.src}
+            alt={zoomed.alt}
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
+      )}
     </section>
   );
 }
@@ -451,20 +511,22 @@ function DocArticle({ doc, selectDoc }: { doc: DocPage; selectDoc: (id: string) 
 
       <AssetFrame doc={doc} />
 
-      <section className="contentBand" id="common-jobs">
-        <div className="sectionTitle">
-          <h2>Common tasks</h2>
-          <p>Choose what you want to do on this page.</p>
-        </div>
-        <div className="actionGrid">
-          {doc.primaryActions.map((action) => (
-            <div className="actionCard" key={action}>
-              <ChevronRight size={17} />
-              <span>{action}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {doc.primaryActions.length > 0 && (
+        <section className="contentBand tasksMobile" id="common-jobs">
+          <div className="sectionTitle">
+            <h2>Common tasks</h2>
+            <p>Choose what you want to do on this page.</p>
+          </div>
+          <div className="actionGrid">
+            {doc.primaryActions.map((action) => (
+              <div className="actionCard" key={action}>
+                <ChevronRight size={17} />
+                <span>{action}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="contentBand" id="how-to-use-this-page">
         <div className="sectionTitle">
@@ -656,6 +718,19 @@ export function App() {
             <div className="railTitle">On this page</div>
             {pageContents.map(([id, label]) => <a key={id} href={`#${id}`}>{label}</a>)}
           </div>
+          {activeDoc.primaryActions.length > 0 && (
+            <div className="railCard railTasks">
+              <div className="railTitle">Common tasks</div>
+              <ul className="railTaskList">
+                {activeDoc.primaryActions.map((action) => (
+                  <li key={action}>
+                    <ChevronRight size={15} />
+                    <span>{action}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {productUrl && <a className="productLink" href={productUrl} target="_blank" rel="noreferrer">
             <ExternalLink size={15} />
             Open {activeDoc.title} in MagickVoice

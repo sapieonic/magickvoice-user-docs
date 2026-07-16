@@ -31,6 +31,7 @@ export interface PageSeed {
   tips: string[];
   screenshots?: VisualReference[];
   compactScreenshot?: boolean;
+  stackedScreenshots?: boolean;
   animation?: boolean;
   order: number;
 }
@@ -45,6 +46,7 @@ interface Frontmatter {
   tips?: string[];
   screenshots?: VisualReference[];
   compactScreenshot?: boolean;
+  stackedScreenshots?: boolean;
   animation?: boolean;
   order?: number;
 }
@@ -148,6 +150,7 @@ function loadSeeds(): PageSeed[] {
       tips: data.tips ?? [],
       screenshots: data.screenshots,
       compactScreenshot: data.compactScreenshot,
+      stackedScreenshots: data.stackedScreenshots,
       animation: data.animation,
       order: data.order ?? Number.MAX_SAFE_INTEGER,
     });
