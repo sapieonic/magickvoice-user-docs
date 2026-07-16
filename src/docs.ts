@@ -735,8 +735,17 @@ const pages: PageSeed[] = [
         steps: [
           'Enter the connection name and SIP domain as above, then select IP whitelist as the authentication mode.',
           'Create the connection without entering credentials.',
-          'Open the saved connection detail page and copy the MagickVoice egress IP addresses shown there.',
+          'Open the saved connection’s detail page and find the Egress IPs to Whitelist section. If the addresses are listed, copy them; if the section says they are not available yet, contact support to obtain them.',
           'Allow those addresses on the SIP trunk or firewall with your carrier. Calls cannot authenticate until the carrier-side allowlist is in place.',
+        ],
+      },
+      {
+        title: 'Review or remove an existing connection',
+        goal: 'Manage the trunks already saved in the workspace.',
+        steps: [
+          'Once connections exist, the page lists them in a table with Name, SIP Domain, Auth Mode, Calls Placed, Test result, Status, and Created date.',
+          'Select a row to open its detail page, or use the row’s Edit control to change its settings.',
+          'Use Revoke to take a trunk out of service. A confirmation warns that calls relying on it will fail, so confirm only when nothing live depends on that route.',
         ],
       },
     ],
@@ -744,6 +753,7 @@ const pages: PageSeed[] = [
       'A SIP connection can direct outbound call traffic through your carrier. Coordinate ownership and testing with the person who manages the carrier account before saving production settings.',
       'If the carrier gives a hostname with a non-standard port, include the port after the hostname, for example sip.example.com:5060.',
       'Use a distinct connection name for sandbox and production trunks so the correct route is obvious during call setup.',
+      'SIP trunks are used only when the effective telephony provider supports them (VoBiz). If your workspace is on another provider, a saved connection will not carry calls until that provider is in effect.',
     ],
   },
   {
@@ -752,28 +762,152 @@ const pages: PageSeed[] = [
     section: 'Phone Menus',
     audience: 'IVR builders',
     capability: 'ivr',
-    summary: 'Manage press-a-key phone menu workflows and open the visual builder for routing changes.',
-    primaryActions: ['Search phone menus', 'Create a menu', 'Edit a menu', 'Review published routing'],
+    summary: 'Manage IVR workflows — automated call flows that greet callers, offer press-a-key menus, collect input, route the call, or hand it off to an AI assistant — and open the visual builder to create or change one.',
+    primaryActions: ['Create a workflow from a template', 'Import a workflow', 'Edit an existing workflow', 'Export or delete a workflow'],
+    screenshots: [
+      {
+        src: '/assets/screenshots/ivr-workflows-list.png',
+        alt: 'IVR Workflows list with Import and Create workflow buttons and a table of workflows showing steps, variables, version, status, and last updated',
+        label: 'Each row shows a workflow with its step and variable counts, version, live status, and per-row edit, export, and delete controls.',
+      },
+    ],
+    compactScreenshot: true,
+    workflows: [
+      {
+        title: 'Manage your phone menu workflows',
+        goal: 'Keep IVR call flows organized and ready to attach to live calling.',
+        steps: [
+          'Open Phone Menus. The count beside the heading shows how many workflows exist; the table lists each workflow with its description, step count, variable count, version, status (for example Active), and when it was last updated.',
+          'Select Create workflow to start from a ready-made template or a blank canvas. Select Edit on a row to open the same builder for that workflow.',
+          'Use Import only with a workflow file you have reviewed, and Export on a row to save a workflow definition for transfer or backup.',
+          'Use Delete on a row only when the workflow is no longer needed. Confirm it is not attached to a live number or campaign before removing it.',
+        ],
+      },
+    ],
+    tips: [
+      'The page guide explains that each workflow is a sequence of steps — play audio, gather input, make a decision, call a webhook, or hand off to an AI assistant.',
+      'Test a workflow before going live by launching a small batch from the Campaign Composer, then review the run on Menu Activity.',
+    ],
   },
   {
-    title: 'New phone menu',
+    title: 'Create or edit a phone menu',
     path: '/app/ivr-workflows/new',
     section: 'Phone Menus',
     audience: 'IVR builders',
     capability: 'ivr',
-    summary: 'Build a new phone menu using canvas steps, prompts, keypad branches, and validation tools.',
-    primaryActions: ['Add menu steps', 'Connect keypad routes', 'Configure retry behavior', 'Simulate and save'],
-    animation: true,
-  },
-  {
-    title: 'Edit phone menu',
-    path: '/app/ivr-workflows/:id/edit',
-    section: 'Phone Menus',
-    audience: 'IVR builders',
-    capability: 'ivr',
-    summary: 'Update an existing IVR workflow while preserving clear routing and tested caller paths.',
-    primaryActions: ['Open the workflow canvas', 'Adjust steps or routes', 'Resolve validation issues', 'Test before publishing'],
-    animation: true,
+    summary: 'Build a new IVR workflow from a template or a blank canvas, or edit an existing one, in the same visual builder: a step palette on the left, the call-flow canvas in the middle, the selected step’s settings on the right, and a dock for problems, variables, and a no-cost simulator.',
+    primaryActions: ['Start from a template or blank canvas', 'Add and connect call steps', 'Configure each step’s settings and routes', 'Simulate, resolve problems, and save'],
+    screenshots: [
+      {
+        src: '/assets/screenshots/ivr-workflow-templates.png',
+        alt: 'Start a workflow dialog with template cards: Blank workflow, Greeting to talk to AI, Press-1 phone menu, Verify a code, and Satisfaction survey',
+        label: 'A new workflow starts with a template picker: pick a ready-made flow such as Press-1 phone menu, or choose Blank workflow for an empty canvas.',
+      },
+      {
+        src: '/assets/screenshots/ivr-builder.png',
+        alt: 'IVR builder showing the Add to the call step palette, the call-flow canvas, the Play message step inspector, and the Problems dock',
+        label: 'The builder is the same for creating and editing: the step palette on the left, the call flow on the canvas, the selected step’s settings on the right, and the Problems / Variables / Simulator dock below.',
+      },
+    ],
+    workflows: [
+      {
+        title: 'Choose a starting point',
+        goal: 'Begin with a structure that matches the call flow, whether the workflow is new or an edit.',
+        steps: [
+          'For a new workflow, select Create workflow from Phone Menus, then pick a template — Blank workflow, Greeting → talk to AI, Press-1 phone menu, Verify a code, or Satisfaction survey. Each template card shows how many steps it starts with.',
+          'To change an existing workflow, select Edit on its row. The builder opens on the same canvas; a header shows the workflow name, the step count, and whether the flow is ready to save.',
+          'Give the workflow a clear name in the name field at the top so it is easy to find later.',
+        ],
+      },
+      {
+        title: 'Build the caller’s journey',
+        goal: 'Lay out the steps a caller moves through, from greeting to a final destination.',
+        steps: [
+          'From the Add to the call palette, add steps: Play message (speak text-to-speech or an uploaded clip), Gather input (ask the caller to press keys and save the result to a variable), Decision (branch on a collected value), Webhook (call an external service mid-call), AI handoff (connect the live caller to an AI assistant — a terminal step), and Hang up (end the call, optionally with a final message).',
+          'Select any step on the canvas to edit it in the right-hand inspector. For a Play message step you set the Title, the required Step ID (used to wire routes), what the caller hears, and the Language and Voice; High-quality audio pre-generates natural-sounding speech instead of the phone network’s robotic text-to-speech.',
+          'Routes read in caller language on the canvas — “if the caller presses 1”, “no input”, “otherwise” — so the branches show exactly how a caller reaches each step.',
+          'Use Undo and Redo while you arrange steps. Only blocking problems stop you saving; reachability and variable hints are advisory.',
+        ],
+      },
+      {
+        title: 'Step type — Play message (Speak)',
+        goal: 'Speak something to the caller — a greeting or read-out information — then continue down the call line. Plays text-to-speech or an uploaded audio clip.',
+        steps: [
+          'What the caller hears: the text spoken via text-to-speech. Use {{variable}} to insert values collected earlier in the call.',
+          'Language and Voice: the language and voice used to speak the message; leave on Default to inherit the workflow’s settings.',
+          'High-quality audio: pre-generates natural-sounding speech through the provider instead of the phone network’s robotic text-to-speech, and falls back to standard audio if it cannot be generated.',
+          'Audio file: choose an uploaded clip to play instead of the text — upload clips under Audio Files first. Advanced options add a Loop count to repeat the message before continuing (defaults to once).',
+          'Use it to open the call, read back information, or bridge between steps.',
+        ],
+      },
+      {
+        title: 'Step type — Gather input (Listen)',
+        goal: 'Ask the caller to press keys and save what they enter into a variable you can branch on later — a menu choice, an OTP, or any keypad input.',
+        steps: [
+          'What the caller hears: the prompt played before input, for example “Press 1 for sales, or 2 for support.” Supports {{variable}} personalization.',
+          'Save the answer as: the required variable name the keypad input is stored under (for example menu_choice) so later steps can test it or pass it to the AI.',
+          'Digits: how many keypad digits to collect (1–20). Timeout: seconds to wait for input before treating it as no input (1–120). Retries: how many times to re-prompt after no input (0–10).',
+          'If the caller gives no input: where to send the caller after they run out of retries; leave blank to continue down the call line.',
+          'Language, Voice, and High-quality audio behave as they do for Play message. Use it whenever the flow needs a decision or data from the caller.',
+        ],
+      },
+      {
+        title: 'Step type — Decision (Decide)',
+        goal: 'Route the caller differently based on a collected value — “if they pressed 1, do this; otherwise, do that.” Adds no audio; it only chooses a path.',
+        steps: [
+          'Decide based on: the collected variable to test (for example menu_choice). Every rule below compares this value.',
+          'Rules: each rule is an operator — Equals, Not equals, In (list), Greater than, or Less than — a value, and a destination step. Each rule peels off the canvas as a labeled detour, and the first matching rule wins.',
+          'Otherwise (no rule matched): the catch-all destination when no rule matches; leave blank to continue down the call line to the next step.',
+          'Use Add rule to add more branches. Use it right after a Gather input step to send each keypad choice to the right place.',
+        ],
+      },
+      {
+        title: 'Step type — Webhook (Decide)',
+        goal: 'Call an external service mid-call to fetch or send data — for example look up an account — and optionally save the response and reroute on failure.',
+        steps: [
+          'Endpoint URL (required) and Method (POST or GET): the service to call; use {{variable}} in the URL to pass collected values.',
+          'If the request fails: where to send the caller if the service errors or times out.',
+          'Advanced — Save response as: store the response (or a field of it) under a name for later steps. Request body: a JSON template sent with the request, using {{variable}} placeholders.',
+          'Advanced — Timeout (500–30000 ms) and Retries (0–5) control how long to wait and how many times to retry. Wait message plays to the caller while the request runs.',
+          'Use it to personalize the flow with live data, such as branching on an account status returned by your system.',
+        ],
+      },
+      {
+        title: 'Step type — AI handoff (Connect)',
+        goal: 'End the IVR and connect the live caller to an AI assistant on the same line. A terminal step — nothing runs after it — and variables collected earlier flow into the AI prompt automatically.',
+        steps: [
+          'AI prompt template (required): the call script the AI agent uses once it takes over; choose one of your saved Call Scripts.',
+          'AI’s opening line: the first thing the AI says when it takes over, with {{variable}} personalization.',
+          'Prompt variables: map collected values into the prompt — the builder offers quick chips such as {{menu_choice}} for the values already gathered.',
+          'Advanced — AI quality sets an optional quality tier (Bronze through Platinum, or the server default) and Language sets the language the AI converses in.',
+          'Use it to let callers self-serve through the menu and then talk to the AI for anything the menu cannot handle.',
+        ],
+      },
+      {
+        title: 'Step type — Hang up (End)',
+        goal: 'End the call cleanly, optionally after a final message. A terminal step — the call ends here.',
+        steps: [
+          'Final message: an optional line played to the caller right before the call ends, for example “Thanks for calling. Goodbye!”',
+          'Language and Voice control how that final message is spoken.',
+          'Use it to close every branch of the flow so callers always reach a defined ending rather than dropping off unexpectedly.',
+        ],
+      },
+      {
+        title: 'Simulate, resolve problems, and save',
+        goal: 'Confirm the flow routes correctly before it handles live callers.',
+        steps: [
+          'Open the Problems tab in the dock. Items there are clickable and jump straight to the step that needs attention — for example “Webhook step needs a valid URL”, “prompt_template_id is required”, or a step that “can’t be reached from the start of the flow”. The flow is ready to save when it reports no blocking problems.',
+          'Use the Variables tab to review the values the flow collects and references, such as menu_choice.',
+          'Open the Simulator, set the sample call details (for example a phone value and a menu_choice), and select Run call to walk the flow step by step. Nothing is dialed and no credits are spent.',
+          'Select Save once the flow is correct. For a significant edit to a live workflow, simulate the revised routing first, since an edit changes the flow that future calls will follow.',
+        ],
+      },
+    ],
+    tips: [
+      'New and edit use the same builder and the same steps; an edit changes the workflow that live calls follow, so treat it as affecting callers already routed through it.',
+      'Give every step a clear Title and a stable Step ID — routes wire to the Step ID, so renaming or removing a step can break the branches that point to it.',
+      'Test the no-input and invalid-input paths in the Simulator; they are the most common places callers get stuck.',
+    ],
   },
   {
     title: 'Menu activity',
@@ -781,8 +915,32 @@ const pages: PageSeed[] = [
     section: 'Phone Menus',
     audience: 'IVR operators',
     capability: 'ivr',
-    summary: 'Review IVR session activity to understand how callers moved through menus.',
-    primaryActions: ['Filter sessions', 'Open a session', 'Compare routes taken', 'Investigate abandoned sessions'],
+    summary: 'Review IVR call sessions — one session per phone call through a workflow — and filter them by status, workflow, phone number, or batch to see how callers moved through your menus.',
+    primaryActions: ['Filter sessions by status or workflow', 'Search for one exact phone number', 'Filter by batch ID', 'Open a session to inspect the caller path'],
+    screenshots: [
+      {
+        src: '/assets/screenshots/ivr-sessions.png',
+        alt: 'IVR Sessions page with Refresh and Initiate Batch buttons, a notice that batch IVR calls have moved to the Campaign Composer, and status, workflow, phone, and batch filters',
+        label: 'Filter sessions by status, workflow, exact phone number, or batch ID. A notice points to the Campaign Composer, which now launches IVR batches.',
+      },
+    ],
+    compactScreenshot: true,
+    workflows: [
+      {
+        title: 'Find and review IVR sessions',
+        goal: 'Locate the right call sessions and understand how callers moved through a menu.',
+        steps: [
+          'Open Menu Activity. Use the status filter (Queued, Ringing, In Progress, Completed, Failed, No Answer, and more), the workflow filter, Search phone (exact) with the full country-code number, or Batch ID to narrow the list.',
+          'Active sessions auto-refresh about every 10 seconds, so you can watch progress live; use Refresh to update immediately.',
+          'Open a session to inspect the caller path — the steps taken, keypad input, and where the call ended — when you need to investigate an abandoned or misrouted call.',
+          'To launch new IVR calls, use Open the Campaign Composer. Batch initiation has moved there and running batches from this page is being retired.',
+        ],
+      },
+    ],
+    tips: [
+      'The phone search is an exact match — enter the complete number with its country code, for example +919876543210.',
+      'Session data reflects real caller activity and may include customer phone numbers; treat it as customer data and do not copy it into unapproved channels.',
+    ],
   },
   {
     title: 'Menu session detail',
@@ -1061,8 +1219,41 @@ const pages: PageSeed[] = [
     section: 'Voice',
     audience: 'Telephony admins',
     capability: 'sip and custom_sip flag',
-    summary: 'Inspect one SIP connection and review configuration required for reliable telephony routing.',
-    primaryActions: ['Review SIP settings', 'Check connection status', 'Update routing configuration', 'Test with a call'],
+    summary: 'Inspect one SIP connection: its domain and authentication mode, status and usage, the egress IPs to allowlist for IP-whitelist trunks, and the controls to test, edit, or revoke it.',
+    primaryActions: ['Review connection information and status', 'Copy the egress IPs to allowlist', 'Test the connection', 'Edit or revoke the connection'],
+    screenshots: [
+      {
+        src: '/assets/screenshots/sip-connection-detail.png',
+        alt: 'SIP connection detail page with Connection Information, Calls Placed and Last Test cards, an Egress IPs to Whitelist section, and Test Connection, Edit, and Revoke buttons',
+        label: 'The detail page shows the connection’s configuration and usage, the egress IPs to allowlist, and the Test Connection, Edit, and Revoke controls.',
+      },
+    ],
+    workflows: [
+      {
+        title: 'Review and verify a SIP connection',
+        goal: 'Confirm a trunk is configured correctly and ready to carry calls.',
+        steps: [
+          'Open Voice, then SIP Connections, and select the connection row. The detail page opens with a breadcrumb back to the list and the connection name and status in the header.',
+          'Check Connection Information for the SIP Domain, Auth Mode, Status, VoBiz Trunk ID, and the Created, Updated, Last Used, Last Tested, and Last Test Error values. The cards below summarize Calls Placed and the Last Test result.',
+          'For an IP-whitelist trunk, use Egress IPs to Whitelist to get the addresses to allow on your carrier’s SIP trunk or firewall. If it reads that IPs are not available yet, contact support to obtain them, as the note on the page instructs.',
+          'Select Test Connection to run a connectivity check; the Last Tested and Last Test Error fields record the outcome. Run a test before routing production calls through the trunk.',
+        ],
+      },
+      {
+        title: 'Edit or revoke a connection',
+        goal: 'Change trunk details or take a trunk out of service safely.',
+        steps: [
+          'Select Edit to change the connection name, SIP domain, authentication mode, or credentials, then save.',
+          'Select Revoke to take the trunk out of service. A confirmation dialog warns that calls relying on this trunk will fail, so confirm only when no live calling depends on it.',
+          'Coordinate edits and revocation with the person who manages the carrier account, since both can interrupt outbound calling.',
+        ],
+      },
+    ],
+    tips: [
+      'Egress IPs are shown here rather than on the list page. For an IP-whitelist trunk, calls cannot authenticate until those addresses are allowed on the carrier side.',
+      'Last Used and Last Tested help confirm whether a trunk is actually carrying traffic before you revoke or reconfigure it.',
+      'Revoking a connection is disruptive, not a soft toggle — the confirmation states that dependent calls will fail, so treat it as taking the route offline.',
+    ],
   },
   {
     title: 'Team',
