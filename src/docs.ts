@@ -1,8 +1,8 @@
-import { pageSeeds, type PageSeed, type VisualReference, type Workflow } from './content';
+import { pageSeeds, releaseNotes, type PageSeed, type ReleaseNote, type VisualReference, type Workflow } from './content';
 import { sectionByName, sections, type SectionId } from './sections';
 
-export type { SectionId, Workflow, VisualReference };
-export { sections };
+export type { SectionId, Workflow, VisualReference, ReleaseNote };
+export { sections, releaseNotes };
 
 export interface DocPage {
   id: string;
