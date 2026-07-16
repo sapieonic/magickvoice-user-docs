@@ -13,6 +13,18 @@ export interface VisualReference {
   label?: string;
 }
 
+/** A single dated release entry on the home page's "What's new" list. */
+export interface ReleaseNote {
+  /** Raw heading text, e.g. `2026-07-13 — Weekly release`. */
+  heading: string;
+  /** The leading date token, when the heading starts with one. */
+  date: string;
+  /** The remainder of the heading after the date/separator. */
+  title: string;
+  /** `- ` bullet items describing the changes (inline Markdown allowed). */
+  items: string[];
+}
+
 /**
  * A page authored as `content/<folder>/<slug>.md`. Frontmatter carries the scalar and
  * array metadata; the Markdown body carries workflows as `## ` blocks. `slug` and
@@ -122,10 +134,14 @@ const modules = import.meta.glob('../content/**/*.md', {
   import: 'default',
 }) as Record<string, string>;
 
+/** Root-level content files that are not section pages and must be loaded separately. */
+const CHANGELOG_PATH = '../content/whats-new.md';
+
 function loadSeeds(): PageSeed[] {
   const seeds: PageSeed[] = [];
 
   for (const [path, raw] of Object.entries(modules)) {
+    if (path === CHANGELOG_PATH) continue;
     const { folder, slug } = parsePath(path);
     const section = sectionByFolder.get(folder);
     if (!section) {
@@ -171,3 +187,42 @@ function loadSeeds(): PageSeed[] {
 }
 
 export const pageSeeds: PageSeed[] = loadSeeds();
+
+/**
+ * Parse the changelog body into release notes. Each `## Heading` starts a release; the
+ * `- ` bullet lines beneath it are its items. When the heading begins with an ISO date
+ * (`YYYY-MM-DD`) followed by a separator, the date is split off and the rest becomes the
+ * title; otherwise the whole heading is the title and `date` is empty. Entries keep
+ * authored order (newest-first), so no sorting is applied here.
+ */
+function parseChangelog(raw: string): ReleaseNote[] {
+  const lines = raw.split('\n');
+  const notes: ReleaseNote[] = [];
+  let current: ReleaseNote | null = null;
+
+  for (const line of lines) {
+    const heading = line.match(/^##\s+(.*)$/);
+    if (heading) {
+      const text = heading[1].trim();
+      // Only a leading ISO date followed by a separator (—, –, -, or :) is treated as a
+      // date. Anything else (e.g. `Real-time updates`) stays intact as the title.
+      const split = text.match(/^(\d{4}-\d{2}-\d{2})\s*[—–:-]\s*(.*)$/);
+      current = {
+        heading: text,
+        date: split ? split[1] : '',
+        title: split ? split[2].trim() : text,
+        items: [],
+      };
+      notes.push(current);
+      continue;
+    }
+    if (!current) continue;
+
+    const item = line.match(/^[-*]\s+(.*)$/);
+    if (item) current.items.push(item[1].trim());
+  }
+
+  return notes.filter((note) => note.items.length > 0);
+}
+
+export const releaseNotes: ReleaseNote[] = parseChangelog(modules[CHANGELOG_PATH] ?? '');

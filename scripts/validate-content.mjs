@@ -46,8 +46,12 @@ if (!existsSync(contentDir)) {
   process.exit(1);
 }
 
+// Root-level content files that are not section pages (loaded separately by the app).
+const NON_PAGE_FILES = new Set(['content/whats-new.md']);
+
 for (const file of walk(contentDir)) {
   const rel = file.slice(root.length + 1);
+  if (NON_PAGE_FILES.has(rel)) continue;
   const parts = rel.split('/');
   const folder = parts[1];
   const slug = parts[parts.length - 1].replace(/\.md$/, '');
@@ -108,6 +112,20 @@ for (const file of walk(contentDir)) {
     const assetPath = join(publicDir, ref.replace(/^\//, ''));
     if (!existsSync(assetPath)) {
       warnings.push(`${rel}: asset not found (placeholder will show): ${ref}`);
+    }
+  }
+}
+
+// Changelog (content/whats-new.md): not a section page, but each `## ` release must
+// have at least one `- ` bullet, else parseChangelog() silently drops it at runtime.
+const changelogPath = join(contentDir, 'whats-new.md');
+if (existsSync(changelogPath)) {
+  const raw = readFileSync(changelogPath, 'utf8');
+  const blocks = raw.split(/^##\s+/m).slice(1);
+  for (const block of blocks) {
+    const heading = block.split('\n', 1)[0].trim();
+    if (!/^[-*]\s+/m.test(block)) {
+      errors.push(`content/whats-new.md: release "${heading}" has no bullet items`);
     }
   }
 }

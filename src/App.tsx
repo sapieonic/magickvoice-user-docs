@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ArrowRight,
   Camera,
   Check,
   CircleHelp,
@@ -16,7 +17,7 @@ import {
   Sun,
   X,
 } from 'lucide-react';
-import { docs, getDocById, sections, type DocPage, type SectionId } from './docs';
+import { docs, getDocById, releaseNotes, sections, type DocPage, type SectionId } from './docs';
 import { sectionIcons } from './sections';
 import { InlineMarkdown } from './markdown';
 
@@ -32,10 +33,16 @@ const pageContents = [
 type Theme = 'dark' | 'light';
 type Accent = 'signal' | 'mint' | 'copper';
 
-function getInitialDocId(): string {
+/** The active view derived from the URL: a doc id, or `null` for the home landing page. */
+function getInitialView(): string | null {
   const match = window.location.pathname.match(/\/docs\/([^/]+)\/?$/);
   const fromPath = match?.[1];
-  return fromPath && docs.some((doc) => doc.id === fromPath) ? fromPath : 'dashboard';
+  return fromPath && docs.some((doc) => doc.id === fromPath) ? fromPath : null;
+}
+
+/** First doc within a section, used by home-page section cards. */
+function firstDocInSection(section: SectionId): string {
+  return (docs.find((doc) => doc.section === section) ?? docs[0]).id;
 }
 
 function getSearchText(doc: DocPage): string {
@@ -71,7 +78,11 @@ function scoreDoc(doc: DocPage, query: string): number {
   return terms.every((term) => haystack.includes(term)) ? score : 0;
 }
 
-function setDocPath(id: string): void {
+function setDocPath(id: string | null): void {
+  if (id === null) {
+    window.history.pushState({ docId: null }, '', '/');
+    return;
+  }
   window.history.pushState({ docId: id }, '', `/docs/${id}`);
 }
 
@@ -110,6 +121,7 @@ function AppHeader({
   accent,
   setAccent,
   onMenu,
+  onHome,
   inactive,
 }: {
   query: string;
@@ -119,6 +131,7 @@ function AppHeader({
   accent: Accent;
   setAccent: (accent: Accent) => void;
   onMenu: () => void;
+  onHome: () => void;
   inactive: boolean;
 }) {
   const headerRef = useInert<HTMLElement>(inactive);
@@ -135,13 +148,13 @@ function AppHeader({
         <Menu size={18} />
       </button>
 
-      <div className="brandBlock">
+      <button className="brandBlock" type="button" onClick={onHome} aria-label="Go to home page">
         <img className="brandMark" src={logoUrl} alt="MagickVoice" />
         <div>
           <div className="brandName">MagickVoice Help Center</div>
           <div className="brandMeta">Step-by-step guides</div>
         </div>
-      </div>
+      </button>
 
       <label className="searchBox" aria-label="Search documentation">
         <Search size={17} />
@@ -218,17 +231,20 @@ function Sidebar({
   onClose,
   mobile,
 }: {
-  activeId: string;
+  activeId: string | null;
   selectDoc: (id: string) => void;
   open: boolean;
   onClose: () => void;
   mobile: boolean;
 }) {
-  const activeSection = getDocById(activeId).section;
-  const [expandedSections, setExpandedSections] = useState<SectionId[]>([activeSection]);
+  const activeSection = activeId ? getDocById(activeId).section : null;
+  const [expandedSections, setExpandedSections] = useState<SectionId[]>(
+    activeSection ? [activeSection] : [sections[0]],
+  );
   const sidebarRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (!activeSection) return;
     setExpandedSections((current) => current.includes(activeSection) ? current : [...current, activeSection]);
   }, [activeSection]);
 
@@ -589,6 +605,78 @@ function DocArticle({ doc, selectDoc }: { doc: DocPage; selectDoc: (id: string) 
   );
 }
 
+function Home({ selectDoc }: { selectDoc: (id: string) => void }) {
+  return (
+    <div className="homeView">
+      <section className="homeHero">
+        <div className="eyebrow">MagickVoice Help Center</div>
+        <h1>Learn how to run voice, messaging, and campaigns with MagickVoice</h1>
+        <p>
+          MagickVoice is an AI-powered voice and messaging platform for placing calls, building phone
+          menus, sending campaigns, and automating follow-ups. This help center is your step-by-step
+          documentation — a guide to every page in the product and how to use it.
+        </p>
+        <div className="homeHeroActions">
+          <button type="button" className="homeCta" onClick={() => selectDoc(firstDocInSection(sections[0]))}>
+            Browse the guides
+            <ArrowRight size={16} />
+          </button>
+          <span className="homeHeroHint">or use the search box above to find a page or task.</span>
+        </div>
+      </section>
+
+      {releaseNotes.length > 0 && (
+        <section className="contentBand">
+          <div className="sectionTitle">
+            <h2>What's new</h2>
+            <p>New capabilities ship every week. Here's what changed recently.</p>
+          </div>
+          <div className="whatsNewList">
+            {releaseNotes.map((note) => (
+              <article className="releaseCard" key={note.heading}>
+                <div className="releaseMeta">
+                  {note.date && <time className="releaseDate" dateTime={note.date}>{note.date}</time>}
+                  <h3>{note.title}</h3>
+                </div>
+                <ul>
+                  {note.items.map((item) => (
+                    <InlineMarkdown as="li" key={item} text={item} />
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="contentBand">
+        <div className="sectionTitle">
+          <h2>Explore by area</h2>
+          <p>Jump straight into the part of MagickVoice you are working in.</p>
+        </div>
+        <div className="homeSectionGrid">
+          {sections.map((section) => {
+            const Icon = sectionIcons[section];
+            const count = docs.filter((doc) => doc.section === section).length;
+            return (
+              <button
+                key={section}
+                type="button"
+                className="homeSectionCard"
+                onClick={() => selectDoc(firstDocInSection(section))}
+              >
+                <Icon size={20} />
+                <span className="homeSectionName">{section}</span>
+                <small>{count} {count === 1 ? 'guide' : 'guides'}</small>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function SearchResults({
   query,
   results,
@@ -630,7 +718,7 @@ function SearchResults({
 }
 
 export function App() {
-  const [activeId, setActiveId] = useState(getInitialDocId);
+  const [activeId, setActiveId] = useState<string | null>(getInitialView);
   const [query, setQuery] = useState('');
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('mv-doc-theme') as Theme) || 'dark');
   const [accent, setAccent] = useState<Accent>(() => (localStorage.getItem('mv-doc-accent') as Accent) || 'signal');
@@ -639,8 +727,8 @@ export function App() {
   const mainRef = useInert<HTMLElement>(mobileNavigation && navOpen);
   const rightRailRef = useInert<HTMLElement>(mobileNavigation && navOpen);
 
-  const activeDoc = getDocById(activeId);
-  const productUrl = productBaseUrl && !activeDoc.appPath.includes(':')
+  const activeDoc = activeId ? getDocById(activeId) : null;
+  const productUrl = activeDoc && productBaseUrl && !activeDoc.appPath.includes(':')
     ? `${productBaseUrl}${activeDoc.appPath}`
     : null;
 
@@ -654,11 +742,18 @@ export function App() {
       .map((result) => result.doc);
   }, [query]);
 
-  function selectDoc(id: string) {
+  function selectDoc(id: string | null) {
     setActiveId(id);
     setDocPath(id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  const goHome = useCallback(() => {
+    setActiveId(null);
+    setDocPath(null);
+    setQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -669,7 +764,7 @@ export function App() {
 
   useEffect(() => {
     const handler = () => {
-      const next = getInitialDocId();
+      const next = getInitialView();
       setActiveId(next);
     };
     window.addEventListener('popstate', handler);
@@ -686,10 +781,11 @@ export function App() {
         accent={accent}
         setAccent={setAccent}
         onMenu={() => setNavOpen(true)}
+        onHome={goHome}
         inactive={mobileNavigation && navOpen}
       />
 
-      <div className={`layout ${query.trim() ? 'searchMode' : ''}`}>
+      <div className={`layout ${query.trim() ? 'searchMode' : ''} ${!query.trim() && !activeDoc ? 'homeMode' : ''}`}>
         <Sidebar
           activeId={activeId}
           selectDoc={selectDoc}
@@ -708,12 +804,14 @@ export function App() {
                 setQuery('');
               }}
             />
-          ) : (
+          ) : activeDoc ? (
             <DocArticle doc={activeDoc} selectDoc={selectDoc} />
+          ) : (
+            <Home selectDoc={selectDoc} />
           )}
         </main>
 
-        {!query.trim() && <aside className="rightRail" ref={rightRailRef} aria-label="Page contents">
+        {!query.trim() && activeDoc && <aside className="rightRail" ref={rightRailRef} aria-label="Page contents">
           <div className="railCard">
             <div className="railTitle">On this page</div>
             {pageContents.map(([id, label]) => <a key={id} href={`#${id}`}>{label}</a>)}
