@@ -1,0 +1,9 @@
+dist/
+node_modules/
+*.tsbuildinfo
+
+# Playwright MCP browser profile (contains logged-in session) and captured output
+.playwright/
+
+# Claude Code session memory
+memory/

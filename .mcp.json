@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--user-data-dir",
+        "/Users/manasnilorout/Personal/Sapionic/user-docs/.playwright/profile",
+        "--output-dir",
+        "/Users/manasnilorout/Personal/Sapionic/user-docs/.playwright/output",
+        "--viewport-size",
+        "1440x900",
+        "--caps",
+        "pdf,verify"
+      ],
+      "env": {}
+    }
+  }
+}
