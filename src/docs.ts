@@ -19,6 +19,7 @@ export interface DocPage {
     screenshot: string;
     screenshots?: VisualReference[];
     compact?: boolean;
+    stacked?: boolean;
     animation?: string;
   };
   related: string[];
@@ -57,6 +58,7 @@ function toDoc(seed: PageSeed): DocPage {
       screenshot: `/assets/screenshots/${id}.png`,
       screenshots: seed.screenshots,
       compact: seed.compactScreenshot,
+      stacked: seed.stackedScreenshots,
       animation: seed.animation ? `/assets/animations/${id}.webm` : undefined,
     },
     related: [],

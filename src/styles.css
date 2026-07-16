@@ -719,7 +719,8 @@ a {
 }
 
 .assetGrid.multiple {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
 }
 
 .assetGrid.compact .mediaFigure {
@@ -742,6 +743,12 @@ a {
 
 .assetGrid.multiple:has(.motion) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* A stacked page stays single-column even when an animation is present. */
+.assetGrid.multiple.stacked,
+.assetGrid.multiple.stacked:has(.motion) {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .mediaFigure {
@@ -775,6 +782,85 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.mediaZoomTrigger {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.mediaZoomTrigger img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 160ms ease;
+}
+
+.mediaZoomTrigger:hover img {
+  transform: scale(1.02);
+}
+
+.mediaZoomTrigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 48px);
+  background: color-mix(in srgb, #000 78%, transparent);
+  backdrop-filter: blur(4px);
+  cursor: zoom-out;
+  animation: lightboxFade 140ms ease;
+}
+
+@keyframes lightboxFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  cursor: default;
+}
+
+.lightboxClose {
+  position: fixed;
+  top: clamp(12px, 3vw, 24px);
+  right: clamp(12px, 3vw, 24px);
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--strong-border);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.lightboxClose:hover {
+  background: var(--panel);
+}
+
+.lightboxClose:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .assetGrid.multiple .mediaFrame {
@@ -1019,6 +1105,34 @@ a {
   color: var(--text);
 }
 
+.railTaskList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.railTaskList li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 7px 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.railTaskList svg {
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.tasksMobile {
+  display: none;
+}
+
 .productLink {
   padding: 12px 14px;
   font-weight: 700;
@@ -1041,6 +1155,10 @@ a {
 
   .rightRail {
     display: none;
+  }
+
+  .tasksMobile {
+    display: block;
   }
 
   .mobileToc {
