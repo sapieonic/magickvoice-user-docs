@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  BookOpen,
   Camera,
   Check,
   CircleHelp,
@@ -9,20 +8,17 @@ import {
   Clipboard,
   ExternalLink,
   Film,
-  Hash,
   Menu,
   Moon,
-  Monitor,
   Palette,
-  PanelLeft,
   Search,
-  ShieldCheck,
   Sparkles,
   Sun,
   X,
-  type LucideIcon,
 } from 'lucide-react';
 import { docs, getDocById, sections, type DocPage, type SectionId } from './docs';
+import { sectionIcons } from './sections';
+import { InlineMarkdown } from './markdown';
 
 const logoUrl = 'https://magickvoice.com/brand/logo-256.png';
 const productBaseUrl = (import.meta.env.VITE_MAGICKVOICE_APP_URL as string | undefined)?.replace(/\/$/, '');
@@ -33,20 +29,6 @@ const pageContents = [
   ['how-to-use-this-page', 'How to use'],
   ['tips-and-troubleshooting', 'Troubleshooting'],
 ] as const;
-
-const sectionIcons: Record<SectionId, LucideIcon> = {
-  Access: ShieldCheck,
-  Overview: Monitor,
-  Voice: Sparkles,
-  'Phone Menus': Hash,
-  Automations: ChevronRight,
-  Campaigns: Film,
-  Messaging: Clipboard,
-  Scheduling: Monitor,
-  Contacts: BookOpen,
-  Administration: ShieldCheck,
-  'Super Admin': PanelLeft,
-};
 
 type Theme = 'dark' | 'light';
 type Accent = 'signal' | 'mint' | 'copper';
@@ -496,12 +478,12 @@ function DocArticle({ doc, selectDoc }: { doc: DocPage; selectDoc: (id: string) 
                 <span>{String(workflowIndex + 1).padStart(2, '0')}</span>
                 <div>
                   <h3>{workflow.title}</h3>
-                  <p>{workflow.goal}</p>
+                  <InlineMarkdown as="p" text={workflow.goal} />
                 </div>
               </div>
               <ol>
                 {workflow.steps.map((step) => (
-                  <li key={step}>{step}</li>
+                  <InlineMarkdown as="li" key={step} text={step} />
                 ))}
               </ol>
             </div>

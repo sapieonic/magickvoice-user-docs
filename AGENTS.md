@@ -4,14 +4,16 @@
 
 This is a standalone Vite + React 18 + TypeScript app for MagickVoice end-user documentation.
 
-- `src/docs.ts` is the content source of truth. Pages are authored as page seeds and transformed into exported docs.
-- `src/App.tsx` contains UI, routing, search, theme, and section icons.
+- `content/<section-folder>/<slug>.md` files are the content source of truth. Each page is Markdown with YAML frontmatter (metadata) plus a body of `##` workflow blocks. The folder determines the section.
+- `src/content.ts` loads and parses the Markdown into `PageSeed[]`; `src/docs.ts` transforms seeds into exported `DocPage[]`.
+- `src/sections.ts` is the single source for section order, names, folders, icons, and guidance.
+- `src/App.tsx` contains UI, routing, search, and theme; `src/markdown.tsx` renders inline Markdown in workflow steps.
 - `src/main.tsx` mounts the React app.
 - `src/styles.css` contains application styling.
 - `public/assets/` stores documentation media. Use `public/assets/screenshots/` for screenshots and `public/assets/animations/` for short GIF/WebM clips.
-- `index.html`, `vite.config.ts`, and `tsconfig.json` define the app shell, build, and TypeScript settings.
+- `scripts/validate-content.mjs` checks content invariants; `index.html`, `vite.config.ts`, and `tsconfig.json` define the app shell, build, and TypeScript settings.
 
-Page slugs are generated from page titles in `docs.ts`. Renaming a title changes `/docs/:slug` URLs and the expected asset filenames.
+Page slugs are the Markdown filenames. Renaming a file changes `/docs/:slug` URLs and the expected asset filenames.
 
 ## Build, Test, and Development Commands
 
@@ -24,9 +26,9 @@ There is no configured test runner, linter, or formatter. Treat `npm run build` 
 
 ## Coding Style & Naming Conventions
 
-Use TypeScript and React function components. Follow the existing style: two-space indentation, single quotes, semicolons, explicit union types for constrained values, and descriptive camelCase names. Keep content data in `docs.ts`; keep UI behavior in `App.tsx`.
+Use TypeScript and React function components. Follow the existing style: two-space indentation, single quotes, semicolons, explicit union types for constrained values, and descriptive camelCase names. Keep page content in `content/**/*.md`; keep UI behavior in `App.tsx`.
 
-When adding a new documentation section, update the `SectionId` union, `sectionGuidance`, `sections`, and `sectionIcons` together. Name assets by the generated page slug, for example `public/assets/screenshots/dashboard.png` or `public/assets/animations/automation-builder.webm`.
+To add a page, create a `content/<folder>/<slug>.md` file with the required frontmatter (`title`, `appPath`, `audience`, `summary`, `primaryActions`) and optional `##` workflow blocks, then run `npm run validate`. To add a new section, add one entry to `sectionConfig` in `src/sections.ts` and create the matching `content/<folder>/` directory — everything else (type, order, icon, guidance) derives from that entry. Name assets by the page slug, for example `public/assets/screenshots/dashboard.png` or `public/assets/animations/new-automation.webm`.
 
 ## Testing Guidelines
 
