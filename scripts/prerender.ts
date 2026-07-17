@@ -100,7 +100,9 @@ function docStructuredData(doc: DocPage): string {
     url: `${SITE}/docs/${doc.id}`,
     isPartOf: { '@type': 'WebSite', name: SITE_TITLE, url: SITE },
   };
-  return `<script type="application/ld+json">${JSON.stringify(data)}</script>`;
+  // Escape `<` so a value containing `</script>` can't break out of the block.
+  const json = JSON.stringify(data).replace(/</g, '\\u003c');
+  return `<script type="application/ld+json">${json}</script>`;
 }
 
 function renderScreenshots(doc: DocPage): string {
@@ -209,19 +211,39 @@ function renderHtml(template: string, meta: PageMeta): string {
     `<meta name="twitter:card" content="summary" />`,
   ].join('\n    ');
 
-  return template
-    .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(fullTitle)}</title>`)
-    .replace(
-      /<meta\s+name="description"[^>]*>/,
-      `<meta name="description" content="${escapeHtml(meta.description)}" />`,
-    )
-    .replace('</head>', `    ${ogTags}\n    ${PRERENDER_STYLE}\n    ${meta.extraHead}\n  </head>`)
-    // Keep #root empty (so the SPA mounts cleanly with no hydration warning) and place the
-    // static content in a sibling that main.tsx removes once React has mounted.
-    .replace(
-      '<div id="root"></div>',
-      `<div id="root"></div>\n    <div id="prerender-fallback">${meta.bodyHtml}</div>`,
+  let html = template;
+  // Each anchor MUST exist. A silent no-op here would ship a degraded page (stale
+  // description, or — for the root div — no content at all) while the build still
+  // reports success, so fail loudly if Vite's output format ever drifts.
+  html = mustReplace(html, /<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(fullTitle)}</title>`, '<title>');
+  html = mustReplace(
+    html,
+    /<meta\s+name="description"[^>]*>/,
+    `<meta name="description" content="${escapeHtml(meta.description)}" />`,
+    'description meta',
+  );
+  html = mustReplace(html, '</head>', `    ${ogTags}\n    ${PRERENDER_STYLE}\n    ${meta.extraHead}\n  </head>`, '</head>');
+  // Keep #root empty (so the SPA mounts cleanly with no hydration warning) and place the
+  // static content in a sibling that main.tsx removes once React has mounted.
+  html = mustReplace(
+    html,
+    '<div id="root"></div>',
+    `<div id="root"></div>\n    <div id="prerender-fallback">${meta.bodyHtml}</div>`,
+    '#root element',
+  );
+  return html;
+}
+
+/** Replace the first match of `anchor`, throwing if it is not present in `source`. */
+function mustReplace(source: string, anchor: string | RegExp, replacement: string, label: string): string {
+  const found = typeof anchor === 'string' ? source.includes(anchor) : anchor.test(source);
+  if (!found) {
+    throw new Error(
+      `prerender: expected anchor "${label}" not found in the built HTML. ` +
+        `Vite's output format may have changed — update scripts/prerender.ts.`,
     );
+  }
+  return source.replace(anchor, replacement);
 }
 
 // --- Markdown rendering ----------------------------------------------------
@@ -315,6 +337,13 @@ if (!existsSync(templatePath)) {
   process.exit(1);
 }
 const template = readFileSync(templatePath, 'utf8');
+if (template.includes('id="prerender-fallback"')) {
+  console.error(
+    'prerender: dist/index.html is already prerendered. Run a fresh `vite build` first ' +
+      '(it empties dist/) — running this script twice would double-inject.',
+  );
+  process.exit(1);
+}
 
 const modules = loadModules();
 const seeds = buildSeeds(modules);
