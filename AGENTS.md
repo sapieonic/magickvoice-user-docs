@@ -5,7 +5,7 @@
 This is a standalone Vite + React 18 + TypeScript app for MagickVoice end-user documentation.
 
 - `content/<section-folder>/<slug>.md` files are the content source of truth. Each page is Markdown with YAML frontmatter (metadata) plus a body of `##` workflow blocks. The folder determines the section.
-- `src/content.ts` loads and parses the Markdown into `PageSeed[]`; `src/docs.ts` transforms seeds into exported `DocPage[]`.
+- `src/content-core.ts` holds the pure (no Vite/DOM) parse + transform pipeline; `src/content.ts` loads the Markdown via `import.meta.glob`; `src/docs.ts` exposes the transformed `DocPage[]`. `scripts/prerender.ts` reuses `content-core` after `vite build` to emit static per-route HTML plus `llms.txt`, `llms-full.txt`, `sitemap.xml`, and per-page `.md` for crawlers and LLM web-fetch tools.
 - `src/sections.ts` is the single source for section order, names, folders, icons, and guidance.
 - `src/App.tsx` contains UI, routing, search, and theme; `src/markdown.tsx` renders inline Markdown in workflow steps.
 - `src/main.tsx` mounts the React app.
@@ -19,7 +19,7 @@ Page slugs are the Markdown filenames. Renaming a file changes `/docs/:slug` URL
 
 - `npm install` installs dependencies from `package-lock.json`.
 - `npm run dev` starts Vite on `http://localhost:5180`.
-- `npm run build` runs `tsc -b` and then creates the production bundle in `dist/`.
+- `npm run build` runs `tsc -b`, creates the production bundle, then prerenders static HTML + machine-readable exports into `dist/`.
 - `npm run preview` serves the production build on `http://localhost:5181`.
 
 There is no configured test runner, linter, or formatter. Treat `npm run build` as the correctness gate before submitting changes.

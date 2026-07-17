@@ -8,11 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm install
 npm run dev       # Vite dev server on http://localhost:5180 (host 0.0.0.0)
 npm run validate  # check content/**/*.md invariants (runs first in build)
-npm run build     # validate → tsc -b (type-check) → vite build → dist/
+npm run build     # validate → tsc -b (type-check) → vite build → prerender → dist/
 npm run preview   # serve the production build on http://localhost:5181
 ```
 
-There is no test runner, linter, or formatter configured. `npm run build` is the correctness gate: it runs `scripts/validate-content.mjs`, then `tsc -b` in strict mode, then bundles. A content-invariant violation or a type error fails the build.
+There is no test runner, linter, or formatter configured. `npm run build` is the correctness gate: it runs `scripts/validate-content.mjs`, then `tsc -b` in strict mode, then bundles, then runs `scripts/prerender.ts` (via `tsx`). A content-invariant violation or a type error fails the build.
+
+### Prerendering for crawlers and LLMs
+
+The app is client-rendered, so a raw fetch of any URL would otherwise return an empty `#root` shell — invisible to LLM web-fetch tools and non-JS crawlers. After `vite build`, `scripts/prerender.ts` reuses the same `content-core` pipeline to write static, content-bearing artifacts into `dist/`: per-route HTML (`dist/docs/<slug>/index.html`) with the page text baked into a `#prerender-fallback` sibling of `#root`, plus `dist/docs/<slug>.md`, `llms.txt`, `llms-full.txt`, `sitemap.xml`, and `robots.txt`. On load, `main.tsx` mounts the SPA into the empty `#root` and removes the fallback, so human visitors are unaffected. Set `SITE_URL` (see `.env.example`) so canonical URLs and the exports point at the deployed origin.
 
 ## Architecture
 
@@ -23,8 +27,9 @@ This is a standalone Vite + React 18 + TypeScript single-page app that renders *
 Source files under `src/`:
 
 - **`sections.ts`** — the single source of truth for sections: an ordered `sectionConfig` array of `{ folder, name, icon, guidance }`. `SectionId`, the `sections` order, `sectionByFolder`/`sectionByName` maps, and `sectionIcons` are all derived from it. Adding a section = adding one entry here + a matching `content/<folder>/` directory. Nothing else needs updating.
-- **`content.ts`** — loads `content/**/*.md` via `import.meta.glob` (eager, raw), splits YAML frontmatter (`js-yaml`) from the Markdown body, parses the body into workflows, and derives `slug`/`section` from the file path. Exports `pageSeeds: PageSeed[]`.
-- **`docs.ts`** — the content model and transform. `toDoc()` turns each `PageSeed` into a `DocPage`; `docs` and `getDocById()` are the public API the UI consumes. No page content lives here anymore.
+- **`content-core.ts`** — the pure, framework-free content pipeline: splits YAML frontmatter (`js-yaml`) from the Markdown body, parses the body into workflows/release notes, and transforms seeds into `DocPage`s (`buildSeeds`, `parseChangelog`, `buildDocs`, and the content model types). It has no Vite (`import.meta.glob`) or DOM dependency, so both the app and the build-time prerender script share one source of truth.
+- **`content.ts`** — the Vite entry point: loads `content/**/*.md` via `import.meta.glob` (eager, raw) and hands the raw Markdown to `content-core`. Exports `pageSeeds` and `releaseNotes`.
+- **`docs.ts`** — thin public API over `content-core`: `docs` (from `buildDocs`) and `getDocById()` are what the UI consumes.
 - **`markdown.tsx`** — `InlineMarkdown`, a thin `marked.parseInline` wrapper for rendering trusted first-party inline Markdown (bold, links, code) in workflow goals/steps.
 - **`App.tsx`** — the whole UI (header, sidebar, article, search) as function components in one file.
 - **`main.tsx`** — React root mount.

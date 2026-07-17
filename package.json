@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5180",
     "validate": "node scripts/validate-content.mjs",
-    "build": "node scripts/validate-content.mjs && tsc -b && vite build",
+    "build": "node scripts/validate-content.mjs && tsc -b && vite build && tsx scripts/prerender.ts",
     "preview": "vite preview --host 0.0.0.0 --port 5181"
   },
   "dependencies": {
