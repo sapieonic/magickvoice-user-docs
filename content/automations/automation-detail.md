@@ -2,27 +2,41 @@
 title: Automation detail
 appPath: /app/automations/:id
 audience: Operations users
-order: 4
-summary: Review a single automation's configuration and status, and use it as the jump-off point to edit the flow, enable or disable it, or open the builder's Dry-run to preview behavior.
+order: 3
+summary: Review one automation at a glance — its trigger, status, step count, and version — and read its run history for evidence of what happened when it fired. The jump-off point to edit the flow.
 primaryActions:
-  - Check the trigger, conditions, and steps
-  - Confirm whether the automation is enabled
-  - Open the builder to edit
-  - Preview behavior with Dry-run
+  - Check the trigger, status, steps, and version
+  - Read the run history
+  - Open a run for detail
+  - Edit the automation
+screenshots:
+  - src: /assets/screenshots/automation-detail.png
+    alt: Automation detail page showing a breadcrumb, the automation name, Back and Edit buttons, summary tiles for Trigger, Status, Steps, and Version, and a Run history section reading "No runs yet"
+    label: The detail page summarizes the automation — Trigger, Status, Steps, and Version tiles — and lists its Run history below. It is read-only; use Edit to change the flow in the builder.
+compactScreenshot: true
 ---
 
-## Review a single automation
+## Review an automation at a glance
 
-Confirm what an automation is set to do before you rely on it or change it.
+Confirm what an automation is set to do without opening the full builder.
 
-1. Open the automation from the **Automations** list. The detail view shows its name and description, the **trigger** it fires on, the **workflow conditions** that gate it, and the **action steps** in order — each with its channel and, for message channels, the [messaging connection](/docs/messaging-connections) it sends through.
-2. Check whether it is **enabled** — a disabled automation is saved but does not fire on matching events.
-3. Verify the tenant shown in the top bar matches where the calls happen; an automation only reacts to events within its own tenant.
+1. Open the detail page by selecting an automation's row on the [Automations](/docs/automations) list, or the **Run history** action on that row. The breadcrumb reads Automations > the automation name, and the name is the page title.
+2. Read the summary tiles: **Trigger** (the event it fires on, such as *After AI call completes*), **Status** (**Enabled** or **Disabled**), **Steps** (how many action steps it runs), and **Version** (for example *v1*).
+3. Confirm the tenant shown in the top bar matches where the calls happen — an automation only reacts to events within its own tenant.
+4. Use **Back** to return to the list, or **Edit** to open the flow in the builder.
+
+## Read the run history
+
+Use the run history as evidence of what the automation actually did when events fired.
+
+1. Find the **Run history** section below the summary; the count beside it shows how many runs have been recorded.
+2. When the automation has not fired yet — because it is disabled, unattached, or no matching event has occurred — the section reads **No runs yet**, with a note that runs appear once matching events fire and the automation is attached to calls.
+3. Once runs exist, review them here to see whether each fired, matched its conditions, and sent — the same outcome the [Dry-run preview](/docs/new-automation) estimates before enabling.
 
 ## Decide what to do next
 
-Move from reviewing to acting once you know the automation's current state.
+Move from reviewing to acting once you know the automation's state.
 
-1. Open the builder to **edit** the trigger, conditions, or steps when the flow needs to change.
-2. Use the builder's **Dry-run** view to preview what the automation would do against sample data or a recent run, without sending anything or spending credits.
-3. Enable or disable the automation to turn follow-ups on or off without deleting the configuration.
+1. Select **Edit** to change the trigger, conditions, or steps — see [Create or edit an automation](/docs/new-automation).
+2. To turn follow-ups on or off without losing the configuration, open it in the builder and toggle **Status**.
+3. Check that each message step still points at a live [messaging connection](/docs/messaging-connections) if sends are unexpectedly failing.

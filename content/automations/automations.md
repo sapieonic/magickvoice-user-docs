@@ -6,16 +6,19 @@ order: 1
 summary: Manage post-call follow-up automations — chained actions that send a Telegram, WhatsApp, or email message, or call a webhook, after a call completes, conditional on the call outcome, IVR responses, or analysis results. The same automation can be reused across single calls, bulk dispatches, and schedules.
 primaryActions:
   - Create a new automation
-  - Read the page guide
-  - Open an automation to review or edit it
-  - Enable or disable an automation
+  - Review the automations table
+  - Open an automation's detail and run history
+  - Edit or delete an automation
 tips:
   - An automation only fires on events in the tenant it was created in; switch to the right tenant before you build it.
   - Every message channel needs a matching messaging connection first (Telegram bot, WhatsApp number, or email domain), so set those up on [Messaging connections](/docs/messaging-connections) before you expect a step to send.
 screenshots:
+  - src: /assets/screenshots/automations-list.png
+    alt: Automations page with a New Automation button, a page guide explaining triggers, conditions, and action steps, and a table listing automations with Name, Trigger, Steps, Status, Version, and Updated columns plus Run history, Edit, and Delete row actions
+    label: The Automations page lists every automation in the current tenant, showing each one's trigger, step count, status, version, and when it was last updated. Each row has Run history, Edit, and Delete actions.
   - src: /assets/screenshots/automations-empty.png
-    alt: Automations page with the New Automation button, an expandable page guide explaining triggers, conditions, and action steps, and an empty state reading "No automations yet"
-    label: The Automations page lists every automation in the current tenant. Until you create one, it shows the empty state with a Create Automation shortcut; the page guide above explains how triggers, conditions, and action steps fit together.
+    alt: Automations page empty state reading "No automations yet" with a Create Automation shortcut
+    label: Before you create one, the page shows an empty state with a Create Automation shortcut. The page guide above explains how triggers, conditions, and action steps fit together.
 compactScreenshot: true
 ---
 
@@ -32,7 +35,15 @@ Know what the feature is for before you build one, so the trigger and actions yo
 
 Keep track of what is set up and which automations are live before adding more.
 
-1. Open **Automations** from the sidebar. The list shows every automation in the current tenant.
-2. If you have not created one yet, the page shows **No automations yet** with a **Create Automation** shortcut. Confirm you are in the intended tenant (shown in the top bar) — automations only fire on events within the tenant they belong to.
-3. Use **New Automation** in the top right to start building. This opens the visual builder on a fresh draft.
-4. Open an existing automation to review its configuration and run history, or to edit or disable it.
+1. Open **Automations** from the sidebar. The table lists every automation in the current tenant with its **Name**, **Trigger**, **Steps** count, **Status** (Enabled or Disabled), **Version**, and when it was **Updated**. Confirm you are in the intended tenant (shown in the top bar) — automations only fire on events within the tenant they belong to.
+2. Before you create your first one, the page shows **No automations yet** with a **Create Automation** shortcut instead of the table.
+3. Select a row — or its **Run history** action — to open the [automation detail](/docs/automation-detail) page for its summary and run history. Select **Edit** on a row to open the flow in the builder.
+4. Use **New Automation** in the top right to start building; this opens the visual builder on a fresh draft. See [Create or edit an automation](/docs/new-automation).
+
+## Delete an automation
+
+Remove an automation you no longer need, understanding what happens to runs already under way.
+
+1. Select **Delete** on the automation's row.
+2. Confirm in the dialog. It warns that the deletion cannot be undone, that in-flight runs referencing the automation will still complete, and that new dispatches will not fire it.
+3. To stop an automation firing without deleting it, edit it and clear its **Status** instead — that keeps the configuration for later.

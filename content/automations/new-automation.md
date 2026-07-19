@@ -1,15 +1,16 @@
 ---
-title: New automation
+title: Create or edit an automation
 appPath: /app/automations/new
 audience: Operations users
 order: 2
-summary: 'Build a follow-up automation in the visual builder: a flow canvas showing the trigger and its action steps, a settings panel on the right for the selected node, and a Dry-run view that previews what would send against sample or real call data. Pick a trigger, add conditions, configure one or more channel steps, preview, then create.'
+summary: 'Build or change a follow-up automation in the visual builder: a flow canvas showing the trigger and its action steps, a settings panel on the right for the selected node, and a Dry-run view that previews what would send against sample or real call data. Creating and editing use the same builder — pick a trigger, add conditions, configure one or more channel steps, preview, then save.'
 primaryActions:
   - Name the automation and choose a trigger
   - Add workflow conditions
   - Configure each action step and its channel
-  - Preview in Dry-run, then Create
+  - Preview in Dry-run, then create or save
 tips:
+  - Creating and editing use the same builder; the only difference is that an edit opens on the saved flow. Saving a new automation lands you on its edit view.
   - Start with a narrow trigger and tight conditions, preview it in Dry-run, then broaden the conditions once the first run behaves the way you expect.
   - A step stays marked "incomplete" until its required fields are set — a message channel needs a connection and a body; a webhook needs a public https URL — and an incomplete step will not send.
   - Message channels need a messaging connection to exist first. If a step reports "No connections yet," add one on [Messaging connections](/docs/messaging-connections), then return to the builder.
@@ -34,11 +35,19 @@ screenshots:
     label: The Dry-run view evaluates the draft against sample data (or a recent real run) and shows whether the workflow conditions matched and what each step would do — so you can confirm the flow before enabling it. No message is sent and no credits are spent.
 ---
 
+## Open the builder
+
+Reach the same builder whether you are starting fresh or changing an existing automation.
+
+1. To create one, select **New Automation** on the [Automations](/docs/automations) page. The builder opens with a **Trigger** node and one action step already on the canvas.
+2. To change an existing one, select **Edit** on its row (or the **Edit** button on its [detail page](/docs/automation-detail)). The builder opens on the saved flow, using the same canvas, node settings, and Editor / Dry-run tabs.
+3. Everything below applies to both. The only difference: a new automation shows **Create** in the header, an existing one shows **Save**.
+
 ## Name the automation and pick a trigger
 
 Set the identity and the starting event, since the trigger decides which calls the automation reacts to.
 
-1. Open the builder with **New Automation** from the Automations page. It starts with a **Trigger** node and one action step already on the canvas, and the right panel showing the automation settings.
+1. Select the **Trigger** node (or the empty canvas) to show the automation settings in the right panel.
 2. Give it a **Name** (required) so it is easy to find later, and add an optional **Description** for context your teammates will read.
 3. Choose the **Trigger** — the event that starts the automation: **After AI call completes**, **After analysis is ready**, **After IVR completes**, or **After announcement completes**. Pick the one that matches the follow-up you want; for example, use *After analysis is ready* when your condition depends on the call's analyzed outcome rather than just that it ended.
 4. Leave **Status** set to **Enabled** for the automation to fire on matching events, or clear it to save the automation without it running yet.
@@ -110,7 +119,7 @@ Build a sequence when one event should trigger more than one follow-up.
 3. Use **Duplicate step** to copy a configured step, or **Remove step** to delete one. At least one step is always required, so the remove control is disabled when only one step remains.
 4. Give any step its own **Only run if** condition so different steps in the same flow can fire under different circumstances.
 
-## Preview in Dry-run, then create
+## Preview in Dry-run, then save
 
 Confirm the flow behaves before it messages real contacts, since a live automation sends to real recipients and spends credits.
 
@@ -118,4 +127,13 @@ Confirm the flow behaves before it messages real contacts, since a live automati
 2. Choose a **Context source**: **Sample data** (a built-in example call) or **A recent run** when a real run is available to replay against.
 3. Use **Edit context JSON** to inspect or adjust the sample context — the `call`, `callee`, `tenant`, and `account` objects whose fields your conditions and `{{variables}}` read from.
 4. Read the result: it reports whether **Workflow conditions matched** and, for each step, whether it would send or was skipped (for example, *Workflow conditions didn't match — no steps would run*). Use **Run locally** to re-evaluate. Nothing is sent and no credits are spent in Dry-run.
-5. When the preview looks right, select **Create** to save the automation. If **Status** is enabled, it begins firing on matching events; otherwise it is saved paused until you enable it.
+5. Select **Create** (new) or **Save** (existing) in the header. If **Status** is enabled, it begins firing on matching events; otherwise it is saved paused until you enable it. After creating, you land on the automation's edit view, and it appears in the [Automations](/docs/automations) list.
+
+## Edit an existing automation safely
+
+Treat a change to a live automation as affecting calls from now on, since an enabled automation acts on future matching events the moment you save.
+
+1. Open the automation in the builder with **Edit**, and confirm you have the right one by its **Name** in the right panel.
+2. Change the trigger, conditions, or any step as above. Each step re-checks its required fields, so watch for one that flips back to **incomplete**.
+3. To stage several changes before any go live, clear **Status** to disable the automation first, make your edits, then re-enable it once the flow is correct.
+4. Preview the revised flow in **Dry-run** to confirm it matches — and skips — the calls you expect, then **Save**. Check the next entries in **Run history** on the [detail page](/docs/automation-detail) to confirm it behaves as intended.
