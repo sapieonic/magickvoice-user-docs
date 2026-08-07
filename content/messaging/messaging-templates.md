@@ -4,11 +4,12 @@ appPath: /app/messaging/templates
 audience: Messaging operators
 order: 3
 capability: messaging
-summary: Review and manage the pre-approved WhatsApp message templates used for outbound messaging, sync approved templates from Meta, or create a new one for approval.
+summary: Review and manage the pre-approved WhatsApp message templates used for outbound messaging, sync approved templates from Meta, or create a new one for approval. Templates can include images, videos, and documents from the media library.
 primaryActions:
   - Review templates and their approval status
   - Sync templates from Meta
   - Create a template manually
+  - Add media to templates
   - Use a template when sending or in an automation
 screenshots:
   - src: /assets/screenshots/messaging-templates-list.png
@@ -53,8 +54,19 @@ Draft a new template here and submit it for Meta approval, when you would rather
 2. Enter a **Template Name** using lowercase letters, numbers, and underscores only (for example `payment_reminder`) — the helper text and `lowercase_with_underscores` placeholder show the required format.
 3. Choose a **Language**. It defaults to **English (US)** and offers a wide range of languages, including English (UK), Hindi, Telugu, Tamil, Spanish, Portuguese (BR), Arabic, French, and German.
 4. Pick a **Category**: **Utility** (the default), **Marketing**, or **Authentication**. Match it to the message's purpose, as Meta reviews templates against their category.
-5. Optionally add **Header Text** for a short heading, then write the **Body Text**. WhatsApp templates use numbered, positional variables — `{{1}}`, `{{2}}`, `{{3}}` — that are filled in when sending, as in "Hello {{1}}, your payment of {{2}} is due on {{3}}."
-6. Optionally add **Footer Text**, such as "Reply STOP to unsubscribe." Select **Create** to submit the template, or **Cancel** to discard it.
+5. Optionally add **Header Text** for a short heading or select **Add Media** to include an image, video, or document in the template header. Media is uploaded to and managed through the media library.
+6. Write the **Body Text**. WhatsApp templates use numbered, positional variables — `{{1}}`, `{{2}}`, `{{3}}` — that are filled in when sending, as in "Hello {{1}}, your payment of {{2}} is due on {{3}}."
+7. Optionally add **Footer Text**, such as "Reply STOP to unsubscribe." Select **Create** to submit the template, or **Cancel** to discard it.
+
+## Add media to a template
+
+Include images, videos, or documents in WhatsApp templates to make messages richer and more engaging.
+
+1. When creating or editing a template, find the **Header** section and select **Add Media** instead of entering header text.
+2. Choose the media type you want to include: **Image**, **Video**, or **Document**. Each template can include one piece of media in its header.
+3. Upload the file from your device or select one from the media library. The media library stores all uploaded files so you can reuse them across multiple templates and campaigns.
+4. Use the media library to organize and manage your files — remove unused media, add new files, and review what is available for templates and campaigns.
+5. When sending a message with this template, the media is delivered as part of the WhatsApp message automatically. Recipients see the image, video, or document at the top of the message.
 
 ## Use an approved template
 

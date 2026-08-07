@@ -4,11 +4,12 @@ appPath: /app/bulk-dispatch-jobs/:id
 audience: Campaign managers
 order: 6
 capability: campaigns
-summary: 'Inspect one campaign in full: a summary of its type, how it started, people called, and progress; a timeline of created / started / completed; the configuration it ran with; an outcome breakdown of how the calls went; and a per-call table with each recipient''s status, duration, sentiment, outcome, and AI summary. Export the per-call data as a spreadsheet.'
+summary: 'Inspect one campaign in full: a summary of its type, how it started, people called, and progress; a timeline of created / started / completed; the configuration it ran with; an outcome breakdown of how the calls went; and a per-call table with each recipient''s status, duration, sentiment, outcome, and AI summary. Stop remaining queued calls or export the per-call data as a spreadsheet.'
 primaryActions:
   - Review the campaign summary and timeline
   - Check the configuration it ran with
   - Read the outcome breakdown
+  - Stop remaining queued calls
   - Inspect and export each call
 tips:
   - The "How the calls went" chart is the fastest read on a campaign — connected vs. no answer, busy, didn't connect, and voicemail, as counts and percentages.
@@ -47,6 +48,16 @@ Get the outcome breakdown for the whole campaign at once.
 1. Find **How the calls went**. The donut and legend break the total into outcomes — **Connected**, **No answer**, **Line busy**, **Didn't connect**, and **Voicemail** — with a count and percentage each.
 2. Use this to judge campaign health at a glance: a high **No answer** share may mean bad timing, while **Didn't connect** points at delivery errors.
 3. For trends across many campaigns rather than this one, open [Campaign analytics](/docs/campaign-analytics).
+
+## Stop remaining queued calls
+
+Cancel pending calls when a campaign needs to be halted, preventing stranded contacts from receiving unwanted calls.
+
+1. When a campaign is still running or has queued calls waiting to be placed, find the **Stop remaining calls** action near the campaign controls at the top of the detail page.
+2. Select **Stop remaining calls** to cancel all calls that are queued but not yet started. This immediately prevents any pending calls from being placed.
+3. Use this when a campaign was launched with incorrect settings, when circumstances change and the remaining calls should not proceed, or when queued calls are left hanging after a problem.
+4. Already-connected or in-progress calls complete normally; only queued calls waiting to start are canceled.
+5. Review the updated progress counts after stopping to confirm how many calls were canceled versus how many had already completed.
 
 ## Inspect and export each call
 

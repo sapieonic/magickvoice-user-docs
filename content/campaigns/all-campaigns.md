@@ -4,11 +4,12 @@ appPath: /app/bulk-dispatch-jobs
 audience: Campaign managers
 order: 5
 capability: campaigns
-summary: 'Track every group of calls you have sent, newest first. Live tiles show what is happening now and what needs a look; the table lists each campaign with its type, how it started, status, progress, contact count, and created date. Open any campaign for its full per-recipient breakdown.'
+summary: 'Track every group of calls you have sent, newest first. Live tiles show what is happening now and what needs a look; the table lists each campaign with its type, how it started, status, progress, contact count, and created date. Open any campaign for its full per-recipient breakdown, stop queued calls, or retry failed calls.'
 primaryActions:
   - Scan the live status tiles
   - Search and filter campaigns
   - Open a campaign's detail and run history
+  - Stop remaining queued calls
   - Retry calls that didn't connect
 tips:
   - The "Needs a look" tile filters straight to campaigns that need attention — start there after a big send.
@@ -50,5 +51,6 @@ Narrow a long list to the campaigns you care about.
 Move from the list to the full detail of one campaign.
 
 1. Select a campaign's row to open its [campaign detail](/docs/campaign-detail) page — its summary, configuration, outcome breakdown, and per-call table.
-2. For a campaign with failures, use the row's **Try the calls that didn't go through** action to retry the recipients that didn't connect.
-3. To start a new campaign, go to [New campaign](/docs/new-campaign).
+2. For a running campaign or one with queued calls, use **Stop remaining calls** on the detail page to cancel any pending calls that have not yet started.
+3. For a campaign with failures, use the row's **Try the calls that didn't go through** action to retry the recipients that didn't connect.
+4. To start a new campaign, go to [New campaign](/docs/new-campaign).
