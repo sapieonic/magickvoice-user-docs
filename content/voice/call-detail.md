@@ -3,7 +3,7 @@ title: Call detail
 appPath: /app/calls/:id
 audience: Voice operators and managers
 order: 5
-summary: Open a completed AI call from Calls to review its delivery facts, recording, AI-generated outcome analysis, and turn-by-turn transcript before deciding on a follow-up.
+summary: Open a completed AI call or dialer call from Calls to review its delivery facts, recording, AI-generated outcome analysis, and turn-by-turn transcript before deciding on a follow-up.
 primaryActions:
   - Review delivery facts
   - Play or download a permitted recording
